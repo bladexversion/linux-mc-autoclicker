@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Virtual environment (never commit — recreated by setup.sh)
+venv/
+.venv/
+
+# Config (user-specific, not part of the project)
+*.json
+
+# Desktop cache
+mimeinfo.cache
+.directory
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Logs
+*.log

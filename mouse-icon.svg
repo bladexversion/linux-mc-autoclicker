@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="btnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#1e3a8a" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <!-- Mouse Body -->
+  <rect x="24" y="14" width="80" height="100" rx="40" fill="url(#bodyGrad)" filter="url(#shadow)"/>
+  
+  <!-- Center Separation Line -->
+  <path d="M 64 14 L 64 56" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Scroll Wheel -->
+  <rect x="58" y="24" width="12" height="22" rx="6" fill="#ffffff" opacity="0.95"/>
+  <rect x="61" y="28" width="6" height="6" rx="3" fill="#2563eb"/>
+
+  <!-- Side Buttons Indicator -->
+  <rect x="18" y="44" width="8" height="16" rx="4" fill="#fbbf24"/>
+  <rect x="18" y="66" width="8" height="16" rx="4" fill="#f59e0b"/>
+
+  <!-- Click Spark Waves -->
+  <path d="M 88 22 C 96 26, 102 34, 104 44" stroke="#ffffff" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.8"/>
+  <path d="M 96 16 C 108 22, 116 34, 118 48" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+</svg>
