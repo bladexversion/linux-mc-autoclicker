@@ -2101,6 +2101,7 @@ class AutoClickerWindow(Gtk.Window):
 
         # ── Bottom row: speed slider (hidden for Remap) ───────────────────────
         speed_row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        speed_row.set_no_show_all(True)  # prevent show_all() from overriding our visibility
         card.pack_start(speed_row, False, False, 0)
 
         # Descriptive label — updates based on selected type
@@ -2161,6 +2162,7 @@ class AutoClickerWindow(Gtk.Window):
 
         # ── Gap row: only shown for Double Click ──────────────────────────────
         gap_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        gap_row.set_no_show_all(True)   # prevent show_all() from overriding our visibility
         card.pack_start(gap_row, False, False, 0)
 
         gap_lbl = Gtk.Label(xalign=0)
