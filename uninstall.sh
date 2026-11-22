@@ -21,7 +21,8 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo ""
 echo "  Mouse AutoClicker — Uninstall"
-echo "  Removing all installed files for user: $REAL_USER"
+echo "  User   : $REAL_USER"
+echo "  Project: $PROJECT_DIR"
 echo ""
 
 remove() {
@@ -31,7 +32,7 @@ remove() {
     fi
 }
 
-# ── System binaries & launcher ────────────────────────────────────────────────
+# ── System launcher ───────────────────────────────────────────────────────────
 info "Removing launcher..."
 remove /usr/local/bin/mouse-autoclicker
 
@@ -48,8 +49,8 @@ info "Removing desktop entries..."
 remove /usr/share/applications/mouse-autoclicker.desktop
 remove "$REAL_HOME/.local/share/applications/mouse-autoclicker.desktop"
 remove "$REAL_HOME/Desktop/MouseAutoClicker.desktop"
-# Remove old-style desktop file if present
-remove "$PROJECT_DIR/RightClicker.desktop"
+update-desktop-database /usr/share/applications &>/dev/null || true
+sudo -u "$REAL_USER" update-desktop-database "$REAL_HOME/.local/share/applications" &>/dev/null || true
 
 # ── Icons ─────────────────────────────────────────────────────────────────────
 info "Removing icons..."
@@ -59,15 +60,11 @@ remove /usr/share/icons/hicolor/512x512/apps/mouse-autoclicker.png
 remove "$REAL_HOME/.local/share/icons/mouse-autoclicker.png"
 gtk-update-icon-cache -f -t /usr/share/icons/hicolor &>/dev/null || true
 
-# ── App menu caches ───────────────────────────────────────────────────────────
-update-desktop-database /usr/share/applications &>/dev/null || true
-sudo -u "$REAL_USER" update-desktop-database "$REAL_HOME/.local/share/applications" &>/dev/null || true
-
-# ── User config (ask) ─────────────────────────────────────────────────────────
+# ── User config ───────────────────────────────────────────────────────────────
 CONFIG_DIR="$REAL_HOME/.config/right_clicker"
 if [ -d "$CONFIG_DIR" ]; then
     echo ""
-    read -r -p "  Remove saved config & keybindings at $CONFIG_DIR? [y/N] " REPLY
+    read -r -p "  Remove saved config & keybindings? [y/N] " REPLY
     if [[ "$REPLY" =~ ^[Yy]$ ]]; then
         rm -rf "$CONFIG_DIR"
         ok "Config removed"
@@ -76,20 +73,26 @@ if [ -d "$CONFIG_DIR" ]; then
     fi
 fi
 
-# ── venv (inside project dir — deleted with project) ─────────────────────────
-info "Removing venv..."
-remove "$PROJECT_DIR/venv"
-
-# ── Python cache ──────────────────────────────────────────────────────────────
-remove "$PROJECT_DIR/__pycache__"
-find "$PROJECT_DIR" -name "*.pyc" -delete 2>/dev/null || true
+# ── Project folder ────────────────────────────────────────────────────────────
+echo ""
+read -r -p "  Delete the project folder itself ($PROJECT_DIR)? [y/N] " REPLY
+if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+    # Can't delete our own running directory — schedule it via a temp script
+    CLEANUP_SCRIPT="$(mktemp /tmp/autoclicker_cleanup_XXXX.sh)"
+    cat > "$CLEANUP_SCRIPT" << CLEANUP
+#!/usr/bin/env bash
+sleep 1
+rm -rf "$PROJECT_DIR"
+rm -f "$CLEANUP_SCRIPT"
+CLEANUP
+    chmod +x "$CLEANUP_SCRIPT"
+    bash "$CLEANUP_SCRIPT" &
+    ok "Project folder will be deleted in 1 second"
+else
+    ok "Project folder kept at $PROJECT_DIR"
+fi
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
-echo -e "${GREEN}  ✓ Uninstall complete!${RESET}"
-echo ""
-echo "  The project folder itself was NOT deleted:"
-echo "  $PROJECT_DIR"
-echo ""
-echo "  You can safely delete that folder to remove everything."
+echo -e "${GREEN}  ✓ Uninstall complete! Mouse AutoClicker has been fully removed.${RESET}"
 echo ""
