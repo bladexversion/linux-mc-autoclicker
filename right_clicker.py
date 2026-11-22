@@ -2144,8 +2144,15 @@ class AutoClickerWindow(Gtk.Window):
             act_def = get_action_by_key(action_key)
             is_remap = act_def.category == "hold"
             is_double = act_def.category == "burst"
-            speed_row.set_visible(not is_remap)
-            gap_row.set_visible(is_double)
+            # show_all() is blocked by no_show_all, so explicitly show/hide + show children
+            if is_remap:
+                speed_row.hide()
+            else:
+                speed_row.show_all()
+            if is_double:
+                gap_row.show_all()
+            else:
+                gap_row.hide()
             if is_double:
                 cps = int(spd_adj.get_value())
                 spd_desc_lbl.set_text(
