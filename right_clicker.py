@@ -1320,9 +1320,22 @@ class AutoClickerCore:
 
         This catches keypresses via X11 even when evdev watchers are blocked (e.g. game
         has grabbed the device). It runs in its own daemon thread and self-restarts on error.
+        When running as root (sudo), we patch DISPLAY/XAUTHORITY so pynput can reach X11.
         """
+        def _ensure_x11_env():
+            """Make sure DISPLAY and XAUTHORITY are set so pynput works under sudo."""
+            if not os.environ.get("DISPLAY"):
+                os.environ["DISPLAY"] = ":0"
+            if not os.environ.get("XAUTHORITY"):
+                user = get_desktop_user()
+                if user:
+                    candidate = f"/home/{user}/.Xauthority"
+                    if os.path.exists(candidate):
+                        os.environ["XAUTHORITY"] = candidate
+
         def _listener_loop():
             import time as _time
+            _ensure_x11_env()  # patch DISPLAY/XAUTHORITY so pynput works under sudo
             while self.running:
                 try:
                     from pynput import keyboard as _kb
