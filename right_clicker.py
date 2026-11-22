@@ -193,29 +193,128 @@ viewport.frame,
 
 /* Table Container & Rows */
 .table-container {
-    background-color: #121212;
+    background-color: #0c0c0c;
     background-image: none;
-    border: 1px solid #202020;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
+    border: none;
+    border-radius: 0;
+    padding: 4px 0;
 }
 
 .binding-card {
-    background-color: #121212;
+    background-color: #111111;
     background-image: none;
-    border: none;
-    border-bottom: 1px solid #1c1c1c;
-    border-radius: 0;
-    padding: 3px 6px;
-    margin: 0;
-    min-height: 26px;
+    border: 1px solid #1e1e1e;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 0 0 6px 0;
 }
 .binding-card:hover {
-    background-color: #181818;
+    background-color: #161616;
+    border-color: #282828;
 }
 .binding-card-active {
     background-color: #0c1a14;
-    border-left: 2px solid #3ecf8e;
+    border-color: #3ecf8e;
+}
+
+/* Trigger big button */
+.trigger-btn {
+    background-color: #1a1a1a;
+    background-image: none;
+    color: #ffffff;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    min-height: 32px;
+}
+.trigger-btn:hover {
+    background-color: #222222;
+    border-color: #3ecf8e;
+    color: #3ecf8e;
+}
+.trigger-btn-detecting {
+    background-color: #261a05;
+    background-image: none;
+    color: #f59e0b;
+    border: 1px solid #63430a;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    min-height: 32px;
+}
+
+/* Action pill buttons */
+.action-pill {
+    background-color: #1a1a1a;
+    background-image: none;
+    color: #666666;
+    border: 1px solid #252525;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    min-height: 26px;
+}
+.action-pill:hover {
+    background-color: #202020;
+    color: #aaaaaa;
+}
+.action-pill-active {
+    background-color: #0d2419;
+    background-image: none;
+    color: #3ecf8e;
+    border: 1px solid #1a4832;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    min-height: 26px;
+}
+
+/* Mode pill buttons */
+.mode-pill {
+    background-color: #1a1a1a;
+    background-image: none;
+    color: #666666;
+    border: 1px solid #252525;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    min-height: 26px;
+}
+.mode-pill:hover {
+    background-color: #202020;
+    color: #aaaaaa;
+}
+.mode-pill-active {
+    background-color: #1a1420;
+    background-image: none;
+    color: #a78bfa;
+    border: 1px solid #3d2d6e;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    min-height: 26px;
+}
+
+/* Card section labels */
+.card-section-label {
+    color: #444444;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Speed slider label */
+.speed-label {
+    color: #555555;
+    font-size: 10px;
+    font-weight: 600;
 }
 
 .card-title {
@@ -1773,244 +1872,206 @@ class AutoClickerWindow(Gtk.Window):
         self.bindings_box.show_all()
 
     def _build_table_header(self):
-        """Constructs a clear, beginner-friendly database table column header."""
-        hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-        hdr.get_style_context().add_class("table-header")
-
-        # Checkbox column spacer
-        sp1 = Gtk.Box()
-        sp1.set_size_request(20, -1)
-        hdr.pack_start(sp1, False, False, 0)
-
-        # TRIGGER header
-        lbl_trig = Gtk.Label(label="TRIGGER BUTTON", xalign=0)
-        lbl_trig.set_size_request(152, -1)
-        lbl_trig.get_style_context().add_class("th-label")
-        hdr.pack_start(lbl_trig, False, False, 0)
-
-        # ACTION header
-        lbl_act = Gtk.Label(label="CLICK ACTION", xalign=0)
-        lbl_act.set_size_request(152, -1)
-        lbl_act.get_style_context().add_class("th-label")
-        hdr.pack_start(lbl_act, False, False, 0)
-
-        # MODE header
-        lbl_mode = Gtk.Label(label="ACTIVATION (PvP / AFK)", xalign=0)
-        lbl_mode.set_size_request(110, -1)
-        lbl_mode.get_style_context().add_class("th-label")
-        hdr.pack_start(lbl_mode, False, False, 0)
-
-        # SETTINGS header
-        lbl_settings = Gtk.Label(label="SPEED & TIMING", xalign=0)
-        lbl_settings.get_style_context().add_class("th-label")
-        hdr.pack_start(lbl_settings, True, True, 0)
-
-        # End spacer (status + delete)
-        sp2 = Gtk.Box()
-        sp2.set_size_request(38, -1)
-        hdr.pack_end(sp2, False, False, 0)
-
-        return hdr
+        """No column headers needed — card layout is self-labelled."""
+        return Gtk.Box()  # empty placeholder, kept so callers don't break
 
     def _create_binding_row(self, binding):
-        """Creates an ultra-compact single-row card, styled like a Supabase database row."""
-        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-        row.get_style_context().add_class("binding-card")
-        binding.row_widget = row
+        """Simplified card layout: trigger button, what it does, speed slider, PVP/AFK toggle."""
+        # Outer card — vertical stack
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        card.get_style_context().add_class("binding-card")
+        binding.row_widget = card
 
-        # 1. Enable Checkbox
-        enable_check = Gtk.CheckButton()
-        enable_check.set_active(binding.enabled)
-        enable_check.set_tooltip_text("Enable / Disable")
-        enable_check.connect("toggled", lambda w: self._on_binding_enable_toggled(w, binding))
-        row.pack_start(enable_check, False, False, 0)
+        # ── Top row: trigger button | action pills | mode pills | status dot + delete ──
+        top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        card.pack_start(top, False, False, 0)
 
-        # 2. Trigger Dropdown (Cell look)
-        t_combo = Gtk.ComboBoxText()
-        t_combo.set_size_request(96, 24)
-        for opt in TRIGGER_OPTIONS:
-            t_combo.append(opt["key"], opt["label"])
-        if binding.trigger not in [opt["key"] for opt in TRIGGER_OPTIONS]:
-            t_combo.append(binding.trigger, get_trigger_label(binding.trigger, binding.trigger_code))
-        t_combo.set_active_id(binding.trigger)
-        t_combo.set_tooltip_text("Trigger button")
-        t_combo.connect("changed", lambda w: self._on_trigger_changed(w, binding))
-        binding.trigger_combo = t_combo
-        row.pack_start(t_combo, False, False, 0)
+        # 1. Trigger big button (shows current trigger, click = detect)
+        trig_label = get_trigger_label(binding.trigger, binding.trigger_code)
+        trig_btn = Gtk.Button(label=f"🖱  {trig_label}")
+        trig_btn.get_style_context().add_class("trigger-btn")
+        trig_btn.set_size_request(150, 34)
+        trig_btn.set_tooltip_text("Click to detect — then press any mouse button")
+        binding.detect_btn = trig_btn
+        binding.trigger_combo = None  # not used in card layout
 
-        # 3. Detect Button (Mini tag)
-        detect_btn = Gtk.Button(label="Detect")
-        detect_btn.set_size_request(46, 24)
-        detect_btn.get_style_context().add_class("btn-detect")
-        detect_btn.set_tooltip_text("Click any mouse button to auto-detect trigger")
-        detect_btn.connect("clicked", lambda w: self._on_detect_clicked(w, binding))
-        binding.detect_btn = detect_btn
-        row.pack_start(detect_btn, False, False, 0)
-
-        # Hairline divider
-        sep1 = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
-        sep1.set_margin_start(1)
-        sep1.set_margin_end(1)
-        row.pack_start(sep1, False, False, 0)
-
-        # 4. Action Dropdown
-        a_combo = Gtk.ComboBoxText()
-        a_combo.set_size_request(150, 24)
-        for act in ACTION_REGISTRY:
-            a_combo.append(act.key, act.label)
-        if binding.action not in [act.key for act in ACTION_REGISTRY]:
-            binding.action = get_action_by_key(binding.action).key
-        a_combo.set_active_id(binding.action)
-        a_combo.set_tooltip_text("Click action: Left, Right, Double Left, or Double Right")
-        row.pack_start(a_combo, False, False, 0)
-
-        # 5. Mode Dropdown (Clear and self-explanatory for beginners)
-        m_combo = Gtk.ComboBoxText()
-        m_combo.set_size_request(108, 24)
-        m_combo.append("hold", "Hold to Click")
-        m_combo.append("toggle", "Toggle On/Off")
-        m_combo.set_active_id(binding.mode)
-        m_combo.set_tooltip_text(
-            "• Hold to Click (PvP): Clicks only while you physically hold the button down\n"
-            "• Toggle On/Off (AFK): Press once to start clicking automatically, press again to stop"
-        )
-        m_combo.connect("changed", lambda w: self._on_mode_changed(w, binding))
-        row.pack_start(m_combo, False, False, 0)
-
-        # 6. Dynamic Parameters Box (Strictly sized, ZERO overflow)
-        params_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
-        params_box.set_hexpand(True)
-        row.pack_start(params_box, True, True, 0)
-
-        def make_num_cell(init_val, min_val, max_val, step, is_int, on_change_fn, tooltip):
-            """Clean numeric input with no + - buttons; supports typing and mouse-wheel scrolling."""
-            entry = Gtk.Entry()
-            entry.get_style_context().add_class("num-cell")
-            entry.set_width_chars(3 if is_int else 4)
-            entry.set_size_request(40 if is_int else 46, 22)
-            entry.set_alignment(0.5)
-            entry.set_tooltip_text(tooltip)
-
-            fmt = (lambda v: f"{int(v)}") if is_int else (lambda v: f"{v:.1f}" if v % 1 else f"{int(v)}")
-            entry.set_text(fmt(init_val))
-
-            def on_changed(w):
-                txt = w.get_text().strip()
-                try:
-                    val = float(txt)
-                    if min_val <= val <= max_val:
-                        on_change_fn(int(val) if is_int else val)
-                except ValueError:
-                    pass
-
-            def on_focus_out(w, event):
-                txt = w.get_text().strip()
-                try:
-                    val = float(txt)
-                    val = max(min_val, min(max_val, val))
-                except ValueError:
-                    val = init_val
-                w.set_text(fmt(val))
-                on_change_fn(int(val) if is_int else val)
-                return False
-
-            def on_scroll(w, event):
-                direction = event.direction
-                delta = step if direction == Gdk.ScrollDirection.UP else (-step if direction == Gdk.ScrollDirection.DOWN else 0)
-                if delta != 0:
-                    txt = w.get_text().strip()
-                    try:
-                        curr = float(txt)
-                    except ValueError:
-                        curr = init_val
-                    new_val = max(min_val, min(max_val, curr + delta))
-                    w.set_text(fmt(new_val))
-                    on_change_fn(int(new_val) if is_int else new_val)
-                    return True
-                return False
-
-            entry.connect("changed", on_changed)
-            entry.connect("focus-out-event", on_focus_out)
-            entry.connect("scroll-event", on_scroll)
-            return entry
-
-        def update_params_display(act_key):
-            for child in params_box.get_children():
-                params_box.remove(child)
-
-            act_def = get_action_by_key(act_key)
-
-            if act_def.category == "burst":
-                # Double Click (Left or Right)
-                cps_cell = make_num_cell(
-                    binding.cps, 1.0, 100.0, 1.0, False,
-                    lambda v: self._on_cps_changed(v, binding),
-                    "Burst Speed: How many double-clicks to fire per second (e.g. 10/s = 20 CPS)"
-                )
-                params_box.pack_start(cps_cell, False, False, 0)
-
-                lbl1 = Gtk.Label(label="Bursts/s")
-                lbl1.get_style_context().add_class("param-label")
-                params_box.pack_start(lbl1, False, False, 0)
-
-                dot = Gtk.Label(label="•")
-                dot.get_style_context().add_class("param-label")
-                dot.set_margin_start(2)
-                dot.set_margin_end(2)
-                params_box.pack_start(dot, False, False, 0)
-
-                gap_cell = make_num_cell(
-                    binding.sub_delay_ms, 5.0, 250.0, 5.0, True,
-                    lambda v: self._on_burst_delay_changed(v, binding),
-                    "Burst Delay: Time gap between 1st & 2nd click in ms (25-40ms recommended for Minecraft)"
-                )
-                params_box.pack_start(gap_cell, False, False, 0)
-
-                lbl2 = Gtk.Label(label="ms delay")
-                lbl2.get_style_context().add_class("param-label")
-                params_box.pack_start(lbl2, False, False, 0)
-
-            elif act_def.category == "hold":
-                # 1:1 Normal Mouse Remap (No CPS / No repeat clicking)
-                badge = Gtk.Label(label="✓ 1:1 Normal Click / Drag")
-                badge.get_style_context().add_class("badge-hold-mode")
-                badge.set_tooltip_text("Acts as a normal mouse button: single click, hold to drag or mine. Zero rapid clicking.")
-                params_box.pack_start(badge, False, False, 0)
-
+        def _on_trig_btn_clicked(btn, b=binding):
+            b.detecting = not b.detecting
+            if b.detecting:
+                btn.set_label("⬤  Press any button…")
+                btn.get_style_context().remove_class("trigger-btn")
+                btn.get_style_context().add_class("trigger-btn-detecting")
             else:
-                # Standard Single Click (Left or Right Auto)
-                cps_cell = make_num_cell(
-                    binding.cps, 1.0, 100.0, 1.0, False,
-                    lambda v: self._on_cps_changed(v, binding),
-                    "Clicks Per Second (CPS)"
-                )
-                params_box.pack_start(cps_cell, False, False, 0)
+                lbl = get_trigger_label(b.trigger, b.trigger_code)
+                btn.set_label(f"🖱  {lbl}")
+                btn.get_style_context().remove_class("trigger-btn-detecting")
+                btn.get_style_context().add_class("trigger-btn")
 
-                lbl = Gtk.Label(label="CPS")
-                lbl.get_style_context().add_class("param-label")
-                params_box.pack_start(lbl, False, False, 0)
+        trig_btn.connect("clicked", _on_trig_btn_clicked)
+        top.pack_start(trig_btn, False, False, 0)
 
-            params_box.show_all()
+        # Vertical divider
+        sep = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+        top.pack_start(sep, False, False, 0)
 
-        update_params_display(binding.action)
-        a_combo.connect("changed", lambda w: self._on_action_changed(w, binding, update_params_display))
+        # 2. Action pills: Double Click | Auto Click | Hold
+        action_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+        lbl_what = Gtk.Label(label="WHAT IT DOES", xalign=0)
+        lbl_what.get_style_context().add_class("card-section-label")
 
-        # 7. Status Dot
+        action_col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        action_col.pack_start(lbl_what, False, False, 0)
+        action_col.pack_start(action_box, False, False, 0)
+        top.pack_start(action_col, False, False, 0)
+
+        # Map simplified pill labels → actual action keys
+        ACTION_PILL_MAP = [
+            ("⚡  Double Click", "double_left"),
+            ("🖱  Auto Click",   "left"),
+            ("📌  Hold",         "remap_left"),
+        ]
+
+        def _action_key_to_pill(key):
+            """Map any action key to the nearest pill bucket."""
+            if "double" in key:
+                return "double_left"
+            if get_action_by_key(key).category == "hold":
+                return "remap_left"
+            return "left"
+
+        action_pill_btns = {}
+        current_pill = _action_key_to_pill(binding.action)
+
+        def _set_action_pill(active_key):
+            for k, btn in action_pill_btns.items():
+                ctx = btn.get_style_context()
+                ctx.remove_class("action-pill")
+                ctx.remove_class("action-pill-active")
+                ctx.add_class("action-pill-active" if k == active_key else "action-pill")
+
+        def _on_action_pill(key, b=binding):
+            b.action = key
+            _set_action_pill(key)
+            _update_speed_row(key)
+            self.core.update_mutes()
+            self._update_save_btn_state()
+
+        for pill_label, pill_key in ACTION_PILL_MAP:
+            btn = Gtk.Button(label=pill_label)
+            btn.get_style_context().add_class(
+                "action-pill-active" if pill_key == current_pill else "action-pill"
+            )
+            btn.connect("clicked", lambda w, k=pill_key: _on_action_pill(k))
+            action_pill_btns[pill_key] = btn
+            action_box.pack_start(btn, False, False, 0)
+
+        # Vertical divider
+        sep2 = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+        top.pack_start(sep2, False, False, 0)
+
+        # 3. Mode pills: PVP (Hold) | AFK (Toggle)
+        mode_col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        lbl_mode = Gtk.Label(label="ACTIVATION", xalign=0)
+        lbl_mode.get_style_context().add_class("card-section-label")
+        mode_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+        mode_col.pack_start(lbl_mode, False, False, 0)
+        mode_col.pack_start(mode_box, False, False, 0)
+        top.pack_start(mode_col, False, False, 0)
+
+        MODE_PILLS = [
+            ("⚔  PVP (Hold)",    "hold"),
+            ("🤖  AFK (Toggle)", "toggle"),
+        ]
+        mode_pill_btns = {}
+
+        def _set_mode_pill(active_mode):
+            for m, btn in mode_pill_btns.items():
+                ctx = btn.get_style_context()
+                ctx.remove_class("mode-pill")
+                ctx.remove_class("mode-pill-active")
+                ctx.add_class("mode-pill-active" if m == active_mode else "mode-pill")
+
+        def _on_mode_pill(mode, b=binding):
+            b.mode = mode
+            b.held.clear()
+            b.toggle_active = False
+            _set_mode_pill(mode)
+            self._update_save_btn_state()
+
+        for pill_label, pill_mode in MODE_PILLS:
+            btn = Gtk.Button(label=pill_label)
+            btn.get_style_context().add_class(
+                "mode-pill-active" if pill_mode == binding.mode else "mode-pill"
+            )
+            btn.set_tooltip_text(
+                "Hold the button to click — releases when you let go" if pill_mode == "hold"
+                else "Press once to start, press again to stop"
+            )
+            btn.connect("clicked", lambda w, m=pill_mode: _on_mode_pill(m))
+            mode_pill_btns[pill_mode] = btn
+            mode_box.pack_start(btn, False, False, 0)
+
+        # 4. Status dot + delete — right-aligned
+        right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        top.pack_end(right_box, False, False, 0)
+
         live_badge = Gtk.Label(label="●")
         live_badge.get_style_context().add_class("badge-idle")
         live_badge.set_tooltip_text("Status: Idle")
         binding.badge_widget = live_badge
-        row.pack_start(live_badge, False, False, 2)
+        right_box.pack_start(live_badge, False, False, 0)
 
-        # 8. Delete Button (Minimal ghost cross)
         del_btn = Gtk.Button(label="✕")
-        del_btn.set_size_request(18, 18)
+        del_btn.set_size_request(22, 22)
         del_btn.get_style_context().add_class("btn-danger")
-        del_btn.set_tooltip_text("Remove binding")
-        del_btn.connect("clicked", lambda _: self._on_delete_binding_clicked(binding, row))
-        row.pack_end(del_btn, False, False, 0)
+        del_btn.set_tooltip_text("Remove this binding")
+        del_btn.connect("clicked", lambda _: self._on_delete_binding_clicked(binding, card))
+        right_box.pack_start(del_btn, False, False, 0)
 
-        return row
+        # ── Bottom row: speed slider (hidden for Hold) ────────────────────────
+        speed_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        card.pack_start(speed_row, False, False, 0)
+
+        lbl_slow = Gtk.Label(label="Slow")
+        lbl_slow.get_style_context().add_class("speed-label")
+        speed_row.pack_start(lbl_slow, False, False, 0)
+
+        # CPS range 1–60; slider value = CPS directly
+        spd_adj = Gtk.Adjustment(value=min(binding.cps, 60.0),
+                                 lower=1.0, upper=60.0,
+                                 step_increment=1.0, page_increment=5.0)
+        spd_scale = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL, adjustment=spd_adj)
+        spd_scale.set_draw_value(True)
+        spd_scale.set_digits(0)
+        spd_scale.set_hexpand(True)
+        spd_scale.set_value_pos(Gtk.PositionType.TOP)
+        spd_scale.connect("scroll-event", self._prevent_scale_scroll)
+
+        # Add tick marks at slow/medium/fast
+        spd_scale.add_mark(10, Gtk.PositionType.BOTTOM, None)
+        spd_scale.add_mark(30, Gtk.PositionType.BOTTOM, None)
+        spd_scale.add_mark(60, Gtk.PositionType.BOTTOM, None)
+
+        def _on_speed_changed(scale, b=binding):
+            cps = scale.get_value()
+            b.cps = cps
+            self._update_save_btn_state()
+
+        spd_scale.connect("value-changed", _on_speed_changed)
+        speed_row.pack_start(spd_scale, True, True, 0)
+
+        lbl_fast = Gtk.Label(label="Fast")
+        lbl_fast.get_style_context().add_class("speed-label")
+        speed_row.pack_start(lbl_fast, False, False, 0)
+
+        def _update_speed_row(action_key):
+            act_def = get_action_by_key(action_key)
+            # Hide speed row for hold-only actions
+            speed_row.set_visible(act_def.category != "hold")
+
+        _update_speed_row(binding.action)
+
+        return card
 
     # Binding Event Handlers
     def _on_binding_enable_toggled(self, widget, binding):
@@ -2044,13 +2105,14 @@ class AutoClickerWindow(Gtk.Window):
         # Toggle detection state
         binding.detecting = not binding.detecting
         if binding.detecting:
-            btn.set_label("Click Button...")
-            btn.get_style_context().remove_class("btn-detect")
-            btn.get_style_context().add_class("btn-detect-active")
+            btn.set_label("⬤  Press any button…")
+            btn.get_style_context().remove_class("trigger-btn")
+            btn.get_style_context().add_class("trigger-btn-detecting")
         else:
-            btn.set_label("Detect")
-            btn.get_style_context().remove_class("btn-detect-active")
-            btn.get_style_context().add_class("btn-detect")
+            lbl = get_trigger_label(binding.trigger, binding.trigger_code)
+            btn.set_label(f"🖱  {lbl}")
+            btn.get_style_context().remove_class("trigger-btn-detecting")
+            btn.get_style_context().add_class("trigger-btn")
 
     def _on_action_changed(self, combo, binding, callback):
         act_key = combo.get_active_id()
@@ -2268,11 +2330,13 @@ class AutoClickerWindow(Gtk.Window):
 
             if hasattr(b, "detect_btn") and b.detect_btn:
                 if not b.detecting:
-                    b.detect_btn.set_label("Detect")
-                    b.detect_btn.get_style_context().remove_class("btn-detect-active")
-                    b.detect_btn.get_style_context().add_class("btn-detect")
+                    # Reset trigger button label to current trigger name
+                    lbl = get_trigger_label(b.trigger, b.trigger_code)
+                    b.detect_btn.set_label(f"🖱  {lbl}")
+                    b.detect_btn.get_style_context().remove_class("trigger-btn-detecting")
+                    b.detect_btn.get_style_context().add_class("trigger-btn")
 
-            # Update trigger combobox if a button was detected
+            # trigger_combo is None in card layout — skip combo update
             if hasattr(b, "trigger_combo") and b.trigger_combo:
                 current_id = b.trigger_combo.get_active_id()
                 if current_id != b.trigger:
