@@ -2143,20 +2143,10 @@ class AutoClickerWindow(Gtk.Window):
             act_def = get_action_by_key(action_key)
             is_remap = act_def.category == "hold"
             is_double = act_def.category == "burst"
-            speed_row.set_visible(not is_remap)
+            # Double click: hide speed slider, show only delay slider
+            speed_row.set_visible(not is_remap and not is_double)
             gap_row.set_visible(is_double)
-            if is_double:
-                cps = int(spd_adj.get_value())
-                spd_desc_lbl.set_text(
-                    f"Speed — {cps} double-clicks/sec  ({cps * 2} total hits/sec on enemy)"
-                )
-                def _live_update_double(scale):
-                    v = int(scale.get_value())
-                    spd_desc_lbl.set_text(
-                        f"Speed — {v} double-clicks/sec  ({v * 2} total hits/sec on enemy)"
-                    )
-                spd_scale.connect("value-changed", _live_update_double)
-            else:
+            if not is_double:
                 spd_desc_lbl.set_text("Speed — clicks per second (CPS)")
 
         # ── Gap row: only shown for Double Click ──────────────────────────────
