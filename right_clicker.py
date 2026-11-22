@@ -1903,10 +1903,13 @@ class AutoClickerWindow(Gtk.Window):
         def _on_trig_btn_clicked(btn, b=binding):
             b.detecting = not b.detecting
             if b.detecting:
-                b.detect_start_time = time.monotonic()  # debounce: ignore events for 300 ms
+                b.detect_start_time = time.monotonic()
                 btn.set_label("⬤  Press any button…")
                 btn.get_style_context().remove_class("trigger-btn")
                 btn.get_style_context().add_class("trigger-btn-detecting")
+                # Go insensitive so subsequent mouse clicks are NOT swallowed by GTK
+                # — evdev will see them raw and capture the trigger correctly
+                GLib.timeout_add(50, lambda: btn.set_sensitive(False))
             else:
                 lbl = get_trigger_label(b.trigger, b.trigger_code)
                 btn.set_label(f"🖱  {lbl}")
@@ -2341,6 +2344,7 @@ class AutoClickerWindow(Gtk.Window):
                     b.detect_btn.set_label(f"🖱  {lbl}")
                     b.detect_btn.get_style_context().remove_class("trigger-btn-detecting")
                     b.detect_btn.get_style_context().add_class("trigger-btn")
+                    b.detect_btn.set_sensitive(True)  # re-enable after detect completes
 
             # trigger_combo is None in card layout — skip combo update
             if hasattr(b, "trigger_combo") and b.trigger_combo:
