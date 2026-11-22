@@ -1025,6 +1025,7 @@ class Binding:
         self.is_clicking = False
         self.total_clicks = 0
         self.detecting = False            # True when detecting next mouse press
+        self.detect_start_time = 0.0      # time.monotonic() when detecting started (debounce)
         self.row_widget = None
 
     def to_dict(self):
@@ -1239,6 +1240,10 @@ class AutoClickerCore:
                     with self.lock:
                         for b in self.bindings:
                             if b.detecting and ev.value == 1:
+                                # Debounce: ignore events within 300 ms of detect mode starting
+                                # so the click that opened detect mode does not self-capture
+                                if time.monotonic() - b.detect_start_time < 0.3:
+                                    break
                                 detecting_binding = b
                                 break
 
@@ -1898,6 +1903,7 @@ class AutoClickerWindow(Gtk.Window):
         def _on_trig_btn_clicked(btn, b=binding):
             b.detecting = not b.detecting
             if b.detecting:
+                b.detect_start_time = time.monotonic()  # debounce: ignore events for 300 ms
                 btn.set_label("⬤  Press any button…")
                 btn.get_style_context().remove_class("trigger-btn")
                 btn.get_style_context().add_class("trigger-btn-detecting")
