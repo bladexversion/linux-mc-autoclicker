@@ -2142,13 +2142,14 @@ class AutoClickerWindow(Gtk.Window):
         def _update_speed_row(action_key):
             act_def = get_action_by_key(action_key)
             is_remap = act_def.category == "hold"
+            is_double = act_def.category == "burst"
             speed_row.set_visible(not is_remap)
-            if act_def.category == "burst":
+            gap_row.set_visible(is_double)
+            if is_double:
                 cps = int(spd_adj.get_value())
                 spd_desc_lbl.set_text(
                     f"Speed — {cps} double-clicks/sec  ({cps * 2} total hits/sec on enemy)"
                 )
-                # Update label live as slider moves
                 def _live_update_double(scale):
                     v = int(scale.get_value())
                     spd_desc_lbl.set_text(
@@ -2157,6 +2158,48 @@ class AutoClickerWindow(Gtk.Window):
                 spd_scale.connect("value-changed", _live_update_double)
             else:
                 spd_desc_lbl.set_text("Speed — clicks per second (CPS)")
+
+        # ── Gap row: only shown for Double Click ──────────────────────────────
+        gap_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        card.pack_start(gap_row, False, False, 0)
+
+        gap_lbl = Gtk.Label(xalign=0)
+        gap_lbl.get_style_context().add_class("speed-label")
+        gap_row.pack_start(gap_lbl, False, False, 0)
+
+        gap_lbl_slow = Gtk.Label(label="Tight")
+        gap_lbl_slow.get_style_context().add_class("speed-label")
+        gap_row.pack_start(gap_lbl_slow, False, False, 0)
+
+        gap_adj = Gtk.Adjustment(value=float(binding.sub_delay_ms),
+                                 lower=5.0, upper=150.0,
+                                 step_increment=5.0, page_increment=10.0)
+        gap_scale = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL, adjustment=gap_adj)
+        gap_scale.set_draw_value(True)
+        gap_scale.set_digits(0)
+        gap_scale.set_hexpand(True)
+        gap_scale.set_value_pos(Gtk.PositionType.TOP)
+        gap_scale.connect("scroll-event", self._prevent_scale_scroll)
+        # Tick marks: safe minimum for Minecraft, recommended, loose
+        gap_scale.add_mark(25,  Gtk.PositionType.BOTTOM, "min")
+        gap_scale.add_mark(35,  Gtk.PositionType.BOTTOM, "rec")
+        gap_scale.add_mark(80,  Gtk.PositionType.BOTTOM, None)
+
+        def _on_gap_changed(scale, b=binding):
+            ms = int(scale.get_value())
+            b.sub_delay_ms = ms
+            gap_lbl.set_text(f"Gap between clicks — {ms} ms")
+            self._update_save_btn_state()
+
+        gap_scale.connect("value-changed", _on_gap_changed)
+        gap_row.pack_start(gap_scale, True, True, 0)
+
+        gap_lbl_fast = Gtk.Label(label="Wide")
+        gap_lbl_fast.get_style_context().add_class("speed-label")
+        gap_row.pack_start(gap_lbl_fast, False, False, 0)
+
+        # Set initial label text
+        gap_lbl.set_text(f"Gap between clicks — {binding.sub_delay_ms} ms")
 
         # Apply initial state
         _update_speed_row(binding.action)
