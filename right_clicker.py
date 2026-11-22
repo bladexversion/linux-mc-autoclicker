@@ -2100,12 +2100,20 @@ class AutoClickerWindow(Gtk.Window):
         right_box.pack_start(del_btn, False, False, 0)
 
         # ── Bottom row: speed slider (hidden for Remap) ───────────────────────
-        speed_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        speed_row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         card.pack_start(speed_row, False, False, 0)
+
+        # Descriptive label — updates based on selected type
+        spd_desc_lbl = Gtk.Label(xalign=0)
+        spd_desc_lbl.get_style_context().add_class("speed-label")
+        speed_row.pack_start(spd_desc_lbl, False, False, 0)
+
+        slider_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        speed_row.pack_start(slider_row, False, False, 0)
 
         lbl_slow = Gtk.Label(label="Slow")
         lbl_slow.get_style_context().add_class("speed-label")
-        speed_row.pack_start(lbl_slow, False, False, 0)
+        slider_row.pack_start(lbl_slow, False, False, 0)
 
         spd_adj = Gtk.Adjustment(value=min(binding.cps, 150.0),
                                  lower=1.0, upper=150.0,
@@ -2125,16 +2133,30 @@ class AutoClickerWindow(Gtk.Window):
             self._update_save_btn_state()
 
         spd_scale.connect("value-changed", _on_speed_changed)
-        speed_row.pack_start(spd_scale, True, True, 0)
+        slider_row.pack_start(spd_scale, True, True, 0)
 
         lbl_fast = Gtk.Label(label="Fast")
         lbl_fast.get_style_context().add_class("speed-label")
-        speed_row.pack_start(lbl_fast, False, False, 0)
+        slider_row.pack_start(lbl_fast, False, False, 0)
 
         def _update_speed_row(action_key):
-            # Hide speed row for remap (1:1 passthrough has no concept of CPS)
-            is_remap = get_action_by_key(action_key).category == "hold"
+            act_def = get_action_by_key(action_key)
+            is_remap = act_def.category == "hold"
             speed_row.set_visible(not is_remap)
+            if act_def.category == "burst":
+                cps = int(spd_adj.get_value())
+                spd_desc_lbl.set_text(
+                    f"Speed — {cps} double-clicks/sec  ({cps * 2} total hits/sec on enemy)"
+                )
+                # Update label live as slider moves
+                def _live_update_double(scale):
+                    v = int(scale.get_value())
+                    spd_desc_lbl.set_text(
+                        f"Speed — {v} double-clicks/sec  ({v * 2} total hits/sec on enemy)"
+                    )
+                spd_scale.connect("value-changed", _live_update_double)
+            else:
+                spd_desc_lbl.set_text("Speed — clicks per second (CPS)")
 
         # Apply initial state
         _update_speed_row(binding.action)
