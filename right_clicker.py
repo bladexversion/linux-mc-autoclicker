@@ -2101,7 +2101,6 @@ class AutoClickerWindow(Gtk.Window):
 
         # ── Bottom row: speed slider (hidden for Remap) ───────────────────────
         speed_row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        speed_row.set_no_show_all(True)  # prevent show_all() from overriding our visibility
         card.pack_start(speed_row, False, False, 0)
 
         # Descriptive label — updates based on selected type
@@ -2144,15 +2143,8 @@ class AutoClickerWindow(Gtk.Window):
             act_def = get_action_by_key(action_key)
             is_remap = act_def.category == "hold"
             is_double = act_def.category == "burst"
-            # show_all() is blocked by no_show_all, so explicitly show/hide + show children
-            if is_remap:
-                speed_row.hide()
-            else:
-                speed_row.show_all()
-            if is_double:
-                gap_row.show_all()
-            else:
-                gap_row.hide()
+            speed_row.set_visible(not is_remap)
+            gap_row.set_visible(is_double)
             if is_double:
                 cps = int(spd_adj.get_value())
                 spd_desc_lbl.set_text(
@@ -2169,7 +2161,6 @@ class AutoClickerWindow(Gtk.Window):
 
         # ── Gap row: only shown for Double Click ──────────────────────────────
         gap_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        gap_row.set_no_show_all(True)   # prevent show_all() from overriding our visibility
         card.pack_start(gap_row, False, False, 0)
 
         gap_lbl = Gtk.Label(xalign=0)
@@ -2210,9 +2201,9 @@ class AutoClickerWindow(Gtk.Window):
         # Set initial label text
         gap_lbl.set_text(f"Gap between clicks — {binding.sub_delay_ms} ms")
 
-        # Apply initial state
-        _update_speed_row(binding.action)
-        _update_mode_sensitivity(binding.action)
+        # Apply initial state — deferred so show_all() fires first
+        GLib.idle_add(lambda: _update_speed_row(binding.action) or False)
+        GLib.idle_add(lambda: _update_mode_sensitivity(binding.action) or False)
 
         return card
 
