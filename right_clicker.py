@@ -1881,24 +1881,49 @@ class AutoClickerWindow(Gtk.Window):
         return Gtk.Box()  # empty placeholder, kept so callers don't break
 
     def _create_binding_row(self, binding):
-        """Simplified card layout: trigger button, what it does, speed slider, PVP/AFK toggle."""
+        """Card layout: trigger button | type pills | button pills | mode pills | status/delete"""
+
+        # ── Action key helpers ────────────────────────────────────────────────
+        # type pill keys
+        TYPE_DOUBLE = "double"
+        TYPE_AUTO   = "auto"
+        TYPE_REMAP  = "remap"
+
+        # button pill keys
+        BTN_LEFT  = "left"
+        BTN_RIGHT = "right"
+
+        # Map (type, button) → actual action key
+        ACTION_MAP = {
+            (TYPE_DOUBLE, BTN_LEFT):  "double_left",
+            (TYPE_DOUBLE, BTN_RIGHT): "double_right",
+            (TYPE_AUTO,   BTN_LEFT):  "left",
+            (TYPE_AUTO,   BTN_RIGHT): "right",
+            (TYPE_REMAP,  BTN_LEFT):  "remap_left",
+            (TYPE_REMAP,  BTN_RIGHT): "remap_right",
+        }
+        REVERSE_MAP = {v: k for k, v in ACTION_MAP.items()}
+
+        def _action_to_type_btn(key):
+            return REVERSE_MAP.get(key, (TYPE_AUTO, BTN_LEFT))
+
         # Outer card — vertical stack
         card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         card.get_style_context().add_class("binding-card")
         binding.row_widget = card
 
-        # ── Top row: trigger button | action pills | mode pills | status dot + delete ──
+        # ── Top row ───────────────────────────────────────────────────────────
         top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         card.pack_start(top, False, False, 0)
 
-        # 1. Trigger big button (shows current trigger, click = detect)
+        # 1. Trigger big button
         trig_label = get_trigger_label(binding.trigger, binding.trigger_code)
         trig_btn = Gtk.Button(label=f"🖱  {trig_label}")
         trig_btn.get_style_context().add_class("trigger-btn")
         trig_btn.set_size_request(150, 34)
         trig_btn.set_tooltip_text("Click to detect — then press any mouse button")
         binding.detect_btn = trig_btn
-        binding.trigger_combo = None  # not used in card layout
+        binding.trigger_combo = None
 
         def _on_trig_btn_clicked(btn, b=binding):
             b.detecting = not b.detecting
@@ -1907,8 +1932,6 @@ class AutoClickerWindow(Gtk.Window):
                 btn.set_label("⬤  Press any button…")
                 btn.get_style_context().remove_class("trigger-btn")
                 btn.get_style_context().add_class("trigger-btn-detecting")
-                # Go insensitive so subsequent mouse clicks are NOT swallowed by GTK
-                # — evdev will see them raw and capture the trigger correctly
                 GLib.timeout_add(50, lambda: btn.set_sensitive(False))
             else:
                 lbl = get_trigger_label(b.trigger, b.trigger_code)
@@ -1919,66 +1942,101 @@ class AutoClickerWindow(Gtk.Window):
         trig_btn.connect("clicked", _on_trig_btn_clicked)
         top.pack_start(trig_btn, False, False, 0)
 
-        # Vertical divider
-        sep = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
-        top.pack_start(sep, False, False, 0)
+        sep0 = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+        top.pack_start(sep0, False, False, 0)
 
-        # 2. Action pills: Double Click | Auto Click | Hold
-        action_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-        lbl_what = Gtk.Label(label="WHAT IT DOES", xalign=0)
-        lbl_what.get_style_context().add_class("card-section-label")
+        # 2. Type pills: Double Click | Auto Click | 1:1 Remap
+        cur_type, cur_btn_side = _action_to_type_btn(binding.action)
 
-        action_col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-        action_col.pack_start(lbl_what, False, False, 0)
-        action_col.pack_start(action_box, False, False, 0)
-        top.pack_start(action_col, False, False, 0)
+        type_col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        lbl_type = Gtk.Label(label="TYPE", xalign=0)
+        lbl_type.get_style_context().add_class("card-section-label")
+        type_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+        type_col.pack_start(lbl_type, False, False, 0)
+        type_col.pack_start(type_box, False, False, 0)
+        top.pack_start(type_col, False, False, 0)
 
-        # Map simplified pill labels → actual action keys
-        ACTION_PILL_MAP = [
-            ("⚡  Double Click", "double_left"),
-            ("🖱  Auto Click",   "left"),
-            ("📌  Hold",         "remap_left"),
+        TYPE_PILLS = [
+            ("⚡  Double",  TYPE_DOUBLE, "Sends 2 clicks per trigger — great for Minecraft PVP"),
+            ("🖱  Auto",    TYPE_AUTO,   "Rapid-fires clicks while held"),
+            ("🔀  Remap",   TYPE_REMAP,  "Makes this button act exactly like another button — 1:1, no auto-fire"),
         ]
+        type_pill_btns = {}
 
-        def _action_key_to_pill(key):
-            """Map any action key to the nearest pill bucket."""
-            if "double" in key:
-                return "double_left"
-            if get_action_by_key(key).category == "hold":
-                return "remap_left"
-            return "left"
+        def _set_type_pill(active):
+            for k, b2 in type_pill_btns.items():
+                ctx = b2.get_style_context()
+                ctx.remove_class("action-pill"); ctx.remove_class("action-pill-active")
+                ctx.add_class("action-pill-active" if k == active else "action-pill")
 
-        action_pill_btns = {}
-        current_pill = _action_key_to_pill(binding.action)
-
-        def _set_action_pill(active_key):
-            for k, btn in action_pill_btns.items():
-                ctx = btn.get_style_context()
-                ctx.remove_class("action-pill")
-                ctx.remove_class("action-pill-active")
-                ctx.add_class("action-pill-active" if k == active_key else "action-pill")
-
-        def _on_action_pill(key, b=binding):
-            b.action = key
-            _set_action_pill(key)
-            _update_speed_row(key)
+        def _on_type_pill(t_key, b=binding):
+            nonlocal cur_type
+            cur_type = t_key
+            new_action = ACTION_MAP.get((cur_type, cur_btn_side), "left")
+            b.action = new_action
+            _set_type_pill(t_key)
+            _update_speed_row(new_action)
+            _update_mode_sensitivity(new_action)
             self.core.update_mutes()
             self._update_save_btn_state()
 
-        for pill_label, pill_key in ACTION_PILL_MAP:
-            btn = Gtk.Button(label=pill_label)
+        for pill_lbl, pill_key, tip in TYPE_PILLS:
+            btn = Gtk.Button(label=pill_lbl)
+            btn.set_tooltip_text(tip)
             btn.get_style_context().add_class(
-                "action-pill-active" if pill_key == current_pill else "action-pill"
+                "action-pill-active" if pill_key == cur_type else "action-pill"
             )
-            btn.connect("clicked", lambda w, k=pill_key: _on_action_pill(k))
-            action_pill_btns[pill_key] = btn
-            action_box.pack_start(btn, False, False, 0)
+            btn.connect("clicked", lambda w, k=pill_key: _on_type_pill(k))
+            type_pill_btns[pill_key] = btn
+            type_box.pack_start(btn, False, False, 0)
 
-        # Vertical divider
+        sep1 = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+        top.pack_start(sep1, False, False, 0)
+
+        # 3. Button pills: Left | Right
+        btn_col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        lbl_btn_side = Gtk.Label(label="BUTTON", xalign=0)
+        lbl_btn_side.get_style_context().add_class("card-section-label")
+        btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+        btn_col.pack_start(lbl_btn_side, False, False, 0)
+        btn_col.pack_start(btn_box, False, False, 0)
+        top.pack_start(btn_col, False, False, 0)
+
+        BTN_PILLS = [
+            ("Left",  BTN_LEFT),
+            ("Right", BTN_RIGHT),
+        ]
+        btn_pill_btns = {}
+
+        def _set_btn_pill(active):
+            for k, b2 in btn_pill_btns.items():
+                ctx = b2.get_style_context()
+                ctx.remove_class("action-pill"); ctx.remove_class("action-pill-active")
+                ctx.add_class("action-pill-active" if k == active else "action-pill")
+
+        def _on_btn_pill(side_key, b=binding):
+            nonlocal cur_btn_side
+            cur_btn_side = side_key
+            new_action = ACTION_MAP.get((cur_type, cur_btn_side), "left")
+            b.action = new_action
+            _set_btn_pill(side_key)
+            _update_speed_row(new_action)
+            self.core.update_mutes()
+            self._update_save_btn_state()
+
+        for pill_lbl, pill_key in BTN_PILLS:
+            btn = Gtk.Button(label=pill_lbl)
+            btn.get_style_context().add_class(
+                "action-pill-active" if pill_key == cur_btn_side else "action-pill"
+            )
+            btn.connect("clicked", lambda w, k=pill_key: _on_btn_pill(k))
+            btn_pill_btns[pill_key] = btn
+            btn_box.pack_start(btn, False, False, 0)
+
         sep2 = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
         top.pack_start(sep2, False, False, 0)
 
-        # 3. Mode pills: PVP (Hold) | AFK (Toggle)
+        # 4. Mode pills: PVP (Hold) | AFK (Toggle)
         mode_col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         lbl_mode = Gtk.Label(label="ACTIVATION", xalign=0)
         lbl_mode.get_style_context().add_class("card-section-label")
@@ -1988,17 +2046,16 @@ class AutoClickerWindow(Gtk.Window):
         top.pack_start(mode_col, False, False, 0)
 
         MODE_PILLS = [
-            ("⚔  PVP (Hold)",    "hold"),
-            ("🤖  AFK (Toggle)", "toggle"),
+            ("⚔  PVP",    "hold",   "Clicks only while you hold the button"),
+            ("🤖  AFK",   "toggle", "Press once to start, press again to stop"),
         ]
         mode_pill_btns = {}
 
-        def _set_mode_pill(active_mode):
-            for m, btn in mode_pill_btns.items():
-                ctx = btn.get_style_context()
-                ctx.remove_class("mode-pill")
-                ctx.remove_class("mode-pill-active")
-                ctx.add_class("mode-pill-active" if m == active_mode else "mode-pill")
+        def _set_mode_pill(active):
+            for m, b2 in mode_pill_btns.items():
+                ctx = b2.get_style_context()
+                ctx.remove_class("mode-pill"); ctx.remove_class("mode-pill-active")
+                ctx.add_class("mode-pill-active" if m == active else "mode-pill")
 
         def _on_mode_pill(mode, b=binding):
             b.mode = mode
@@ -2007,20 +2064,25 @@ class AutoClickerWindow(Gtk.Window):
             _set_mode_pill(mode)
             self._update_save_btn_state()
 
-        for pill_label, pill_mode in MODE_PILLS:
-            btn = Gtk.Button(label=pill_label)
+        def _update_mode_sensitivity(action_key):
+            # Remap is always hold-mode — hide AFK pill
+            is_remap = get_action_by_key(action_key).category == "hold"
+            for m, b2 in mode_pill_btns.items():
+                b2.set_sensitive(not is_remap)
+            if is_remap:
+                _set_mode_pill("hold")
+
+        for pill_lbl, pill_mode, tip in MODE_PILLS:
+            btn = Gtk.Button(label=pill_lbl)
+            btn.set_tooltip_text(tip)
             btn.get_style_context().add_class(
                 "mode-pill-active" if pill_mode == binding.mode else "mode-pill"
-            )
-            btn.set_tooltip_text(
-                "Hold the button to click — releases when you let go" if pill_mode == "hold"
-                else "Press once to start, press again to stop"
             )
             btn.connect("clicked", lambda w, m=pill_mode: _on_mode_pill(m))
             mode_pill_btns[pill_mode] = btn
             mode_box.pack_start(btn, False, False, 0)
 
-        # 4. Status dot + delete — right-aligned
+        # 5. Status dot + delete — right-aligned
         right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         top.pack_end(right_box, False, False, 0)
 
@@ -2037,7 +2099,7 @@ class AutoClickerWindow(Gtk.Window):
         del_btn.connect("clicked", lambda _: self._on_delete_binding_clicked(binding, card))
         right_box.pack_start(del_btn, False, False, 0)
 
-        # ── Bottom row: speed slider (hidden for Hold) ────────────────────────
+        # ── Bottom row: speed slider (hidden for Remap) ───────────────────────
         speed_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         card.pack_start(speed_row, False, False, 0)
 
@@ -2045,7 +2107,6 @@ class AutoClickerWindow(Gtk.Window):
         lbl_slow.get_style_context().add_class("speed-label")
         speed_row.pack_start(lbl_slow, False, False, 0)
 
-        # CPS range 1–60; slider value = CPS directly
         spd_adj = Gtk.Adjustment(value=min(binding.cps, 150.0),
                                  lower=1.0, upper=150.0,
                                  step_increment=1.0, page_increment=5.0)
@@ -2055,15 +2116,12 @@ class AutoClickerWindow(Gtk.Window):
         spd_scale.set_hexpand(True)
         spd_scale.set_value_pos(Gtk.PositionType.TOP)
         spd_scale.connect("scroll-event", self._prevent_scale_scroll)
-
-        # Add tick marks at slow/medium/fast
-        spd_scale.add_mark(30, Gtk.PositionType.BOTTOM, None)
-        spd_scale.add_mark(75, Gtk.PositionType.BOTTOM, None)
+        spd_scale.add_mark(30,  Gtk.PositionType.BOTTOM, None)
+        spd_scale.add_mark(75,  Gtk.PositionType.BOTTOM, None)
         spd_scale.add_mark(150, Gtk.PositionType.BOTTOM, None)
 
         def _on_speed_changed(scale, b=binding):
-            cps = scale.get_value()
-            b.cps = cps
+            b.cps = scale.get_value()
             self._update_save_btn_state()
 
         spd_scale.connect("value-changed", _on_speed_changed)
@@ -2074,11 +2132,13 @@ class AutoClickerWindow(Gtk.Window):
         speed_row.pack_start(lbl_fast, False, False, 0)
 
         def _update_speed_row(action_key):
-            act_def = get_action_by_key(action_key)
-            # Hide speed row for hold-only actions
-            speed_row.set_visible(act_def.category != "hold")
+            # Hide speed row for remap (1:1 passthrough has no concept of CPS)
+            is_remap = get_action_by_key(action_key).category == "hold"
+            speed_row.set_visible(not is_remap)
 
+        # Apply initial state
         _update_speed_row(binding.action)
+        _update_mode_sensitivity(binding.action)
 
         return card
 
