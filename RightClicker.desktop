@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Mouse AutoClicker
+GenericName=Auto Clicker
+Comment=Multi-Binding Auto Clicker for Linux Mint XFCE
+Exec=/usr/local/bin/mouse-autoclicker
+Path=/home/aravsun/Desktop/RIGHT CLICKER
+Icon=mouse-autoclicker
+Terminal=false
+Categories=Utility;GTK;Settings;HardwareSettings;
+Keywords=mouse;clicker;autoclicker;cps;gaming;bindings;
+StartupNotify=true
