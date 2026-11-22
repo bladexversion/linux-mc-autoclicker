@@ -1918,7 +1918,7 @@ class AutoClickerWindow(Gtk.Window):
 
         # 1. Trigger big button
         trig_label = get_trigger_label(binding.trigger, binding.trigger_code)
-        trig_btn = Gtk.Button(label=f"🖱  {trig_label}")
+        trig_btn = Gtk.Button(label=f"{trig_label}")
         trig_btn.get_style_context().add_class("trigger-btn")
         trig_btn.set_size_request(150, 34)
         trig_btn.set_tooltip_text("Click to detect — then press any mouse button")
@@ -1935,7 +1935,7 @@ class AutoClickerWindow(Gtk.Window):
                 GLib.timeout_add(50, lambda: btn.set_sensitive(False))
             else:
                 lbl = get_trigger_label(b.trigger, b.trigger_code)
-                btn.set_label(f"🖱  {lbl}")
+                btn.set_label(f"{lbl}")
                 btn.get_style_context().remove_class("trigger-btn-detecting")
                 btn.get_style_context().add_class("trigger-btn")
 
@@ -1957,9 +1957,9 @@ class AutoClickerWindow(Gtk.Window):
         top.pack_start(type_col, False, False, 0)
 
         TYPE_PILLS = [
-            ("⚡  Double",  TYPE_DOUBLE, "Sends 2 clicks per trigger — great for Minecraft PVP"),
-            ("🖱  Auto",    TYPE_AUTO,   "Rapid-fires clicks while held"),
-            ("🔀  Remap",   TYPE_REMAP,  "Makes this button act exactly like another button — 1:1, no auto-fire"),
+            ("Double",  TYPE_DOUBLE, "Sends 2 clicks per trigger — great for Minecraft PVP"),
+            ("Auto",    TYPE_AUTO,   "Rapid-fires clicks while held"),
+            ("Remap",   TYPE_REMAP,  "Makes this button act exactly like another button — 1:1, no auto-fire"),
         ]
         type_pill_btns = {}
 
@@ -2046,8 +2046,8 @@ class AutoClickerWindow(Gtk.Window):
         top.pack_start(mode_col, False, False, 0)
 
         MODE_PILLS = [
-            ("⚔  PVP",    "hold",   "Clicks only while you hold the button"),
-            ("🤖  AFK",   "toggle", "Press once to start, press again to stop"),
+            ("PVP",    "hold",   "Clicks only while you hold the button"),
+            ("AFK",   "toggle", "Press once to start, press again to stop"),
         ]
         mode_pill_btns = {}
 
@@ -2234,7 +2234,7 @@ class AutoClickerWindow(Gtk.Window):
             btn.get_style_context().add_class("trigger-btn-detecting")
         else:
             lbl = get_trigger_label(binding.trigger, binding.trigger_code)
-            btn.set_label(f"🖱  {lbl}")
+            btn.set_label(f"{lbl}")
             btn.get_style_context().remove_class("trigger-btn-detecting")
             btn.get_style_context().add_class("trigger-btn")
 
@@ -2456,7 +2456,7 @@ class AutoClickerWindow(Gtk.Window):
                 if not b.detecting:
                     # Reset trigger button label to current trigger name
                     lbl = get_trigger_label(b.trigger, b.trigger_code)
-                    b.detect_btn.set_label(f"🖱  {lbl}")
+                    b.detect_btn.set_label(f"{lbl}")
                     b.detect_btn.get_style_context().remove_class("trigger-btn-detecting")
                     b.detect_btn.get_style_context().add_class("trigger-btn")
                     b.detect_btn.set_sensitive(True)  # re-enable after detect completes
