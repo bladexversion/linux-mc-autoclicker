@@ -111,7 +111,7 @@ fi
 
 # ── 6. App icon ───────────────────────────────────────────────────────────────
 info "Installing app icon..."
-ICON_SRC="$PROJECT_DIR/assets/Neon Click Mouse Icon.png"
+ICON_SRC="$PROJECT_DIR/assets/icon.png"
 if [ -f "$ICON_SRC" ]; then
     for RES in 256x256 512x512; do
         ICON_DIR="/usr/share/icons/hicolor/$RES/apps"

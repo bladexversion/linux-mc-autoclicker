@@ -741,7 +741,7 @@ def install_polkit_policy():
 def install_desktop_entry():
     """Ensure the app is registered in Linux Applications / Whisker Menu."""
     app_dir = os.path.dirname(os.path.abspath(__file__))
-    icon_png = os.path.join(app_dir, "assets", "Neon Click Mouse Icon.png")
+    icon_png = os.path.join(app_dir, "assets", "icon.png")
     user_home = f"/home/{get_desktop_user()}"
 
     user_icon_dir = os.path.join(user_home, ".local/share/icons")
@@ -1475,7 +1475,7 @@ class AutoClickerWindow(Gtk.Window):
 
         # Set Window Icon — prefer custom Neon Icon PNG
         app_dir = os.path.dirname(os.path.abspath(__file__))
-        icon_path_png = os.path.join(app_dir, "assets", "Neon Click Mouse Icon.png")
+        icon_path_png = os.path.join(app_dir, "assets", "icon.png")
         icon_loaded = False
         if os.path.exists(icon_path_png):
             try:
