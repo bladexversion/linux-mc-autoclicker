@@ -2037,8 +2037,8 @@ class AutoClickerWindow(Gtk.Window):
         speed_row.pack_start(lbl_slow, False, False, 0)
 
         # CPS range 1–60; slider value = CPS directly
-        spd_adj = Gtk.Adjustment(value=min(binding.cps, 60.0),
-                                 lower=1.0, upper=60.0,
+        spd_adj = Gtk.Adjustment(value=min(binding.cps, 150.0),
+                                 lower=1.0, upper=150.0,
                                  step_increment=1.0, page_increment=5.0)
         spd_scale = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL, adjustment=spd_adj)
         spd_scale.set_draw_value(True)
@@ -2048,9 +2048,9 @@ class AutoClickerWindow(Gtk.Window):
         spd_scale.connect("scroll-event", self._prevent_scale_scroll)
 
         # Add tick marks at slow/medium/fast
-        spd_scale.add_mark(10, Gtk.PositionType.BOTTOM, None)
         spd_scale.add_mark(30, Gtk.PositionType.BOTTOM, None)
-        spd_scale.add_mark(60, Gtk.PositionType.BOTTOM, None)
+        spd_scale.add_mark(75, Gtk.PositionType.BOTTOM, None)
+        spd_scale.add_mark(150, Gtk.PositionType.BOTTOM, None)
 
         def _on_speed_changed(scale, b=binding):
             cps = scale.get_value()
